@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>사무실 정리 현황</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --bg:#F2F4F6;
+    --card:#FFFFFF;
+    --line:#E5E8EB;
+    --line-soft:#F2F4F6;
+    --t1:#191F28;
+    --t2:#4E5968;
+    --t3:#8B95A1;
+    --blue:#3182F6;
+    --blue-bg:#EBF3FE;
+    /* disposition palette */
+    --c-mijung:#8B95A1;  --c-mijung-bg:#F2F4F6;
+    --c-yangdo:#20A45C;  --c-yangdo-bg:#E7F7EE;
+    --c-danggun:#FF7E36; --c-danggun-bg:#FFF1E8;
+    --c-nonui:#F59F00;   --c-nonui-bg:#FFF6E5;
+    --c-alpha:#3182F6;   --c-alpha-bg:#EBF3FE;
+    --c-veranda:#12B886; --c-veranda-bg:#E6F8F1;
+    --c-gyoche:#845EF7;  --c-gyoche-bg:#F1ECFE;
+    --c-pyegi:#F04452;   --c-pyegi-bg:#FEECEE;
+    --shadow:0 1px 3px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.04);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{
+    font-family:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--t1);
+    line-height:1.5;
+    letter-spacing:-0.01em;
+    padding-bottom:80px;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px;}
+
+  /* Header */
+  header{padding:40px 0 24px;}
+  .eyebrow{font-size:13px;font-weight:600;color:var(--blue);letter-spacing:0;margin-bottom:8px;}
+  h1{font-size:28px;font-weight:800;letter-spacing:-0.03em;}
+  .sub{margin-top:6px;font-size:15px;color:var(--t3);}
+
+  /* Summary */
+  .summary{
+    background:var(--card);border-radius:20px;padding:24px;box-shadow:var(--shadow);
+    margin-bottom:16px;
+  }
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .stat{text-align:center;padding:6px 4px;}
+  .stat .num{font-size:24px;font-weight:800;letter-spacing:-0.04em;}
+  .stat .lbl{font-size:12px;color:var(--t3);margin-top:4px;font-weight:500;}
+  .stat.blue .num{color:var(--blue);}
+  .stat.red .num{color:var(--c-pyegi);}
+  .stat.green .num{color:var(--c-yangdo);}
+
+  .progress-wrap{margin-top:20px;}
+  .progress-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+  .progress-top .label{font-size:14px;font-weight:600;color:var(--t2);}
+  .progress-top .pct{font-size:14px;font-weight:700;color:var(--blue);}
+  .bar{height:10px;background:var(--line-soft);border-radius:99px;overflow:hidden;}
+  .bar > div{height:100%;background:linear-gradient(90deg,#3182F6,#69A8FF);border-radius:99px;width:0;transition:width .5s cubic-bezier(.2,.8,.2,1);}
+
+  /* Tabs */
+  .tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0 14px;scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{
+    flex:0 0 auto;border:none;background:var(--card);color:var(--t2);
+    font-family:inherit;font-size:14px;font-weight:600;
+    padding:9px 16px;border-radius:99px;cursor:pointer;
+    box-shadow:var(--shadow);transition:.15s;white-space:nowrap;
+  }
+  .tab .cnt{color:var(--t3);font-weight:600;margin-left:5px;}
+  .tab.active{background:var(--t1);color:#fff;}
+  .tab.active .cnt{color:rgba(255,255,255,.6);}
+
+  /* List */
+  .list{display:flex;flex-direction:column;gap:10px;}
+  .item{
+    background:var(--card);border-radius:18px;padding:18px;box-shadow:var(--shadow);
+    display:flex;align-items:flex-start;gap:14px;transition:.2s;
+  }
+  .item.done{opacity:.55;}
+  .check{
+    flex:0 0 auto;width:26px;height:26px;border-radius:9px;border:2px solid var(--line);
+    background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    margin-top:2px;transition:.15s;
+  }
+  .check svg{width:15px;height:15px;stroke:#fff;stroke-width:3;fill:none;opacity:0;transition:.15s;}
+  .item.done .check{background:var(--blue);border-color:var(--blue);}
+  .item.done .check svg{opacity:1;}
+  .body{flex:1;min-width:0;}
+  .name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .name{font-size:16px;font-weight:700;letter-spacing:-0.02em;}
+  .item.done .name{text-decoration:line-through;text-decoration-color:var(--t3);}
+  .qty{
+    font-size:12px;font-weight:700;color:var(--blue);background:var(--blue-bg);
+    padding:2px 8px;border-radius:7px;
+  }
+  .cat{font-size:11px;font-weight:600;color:var(--t3);background:var(--line-soft);padding:2px 8px;border-radius:7px;}
+  .meta{font-size:13px;color:var(--t3);margin-top:5px;}
+  .meta b{color:var(--t2);font-weight:600;}
+
+  .disp{flex:0 0 auto;position:relative;}
+  .disp-btn{
+    border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;
+    padding:7px 12px;border-radius:10px;display:flex;align-items:center;gap:5px;white-space:nowrap;
+    transition:.15s;
+  }
+  .disp-btn svg{width:12px;height:12px;}
+  .menu{
+    position:absolute;top:calc(100% + 6px);right:0;z-index:20;
+    background:#fff;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,.12);
+    padding:6px;min-width:130px;display:none;
+  }
+  .menu.open{display:block;}
+  .menu button{
+    display:flex;align-items:center;gap:8px;width:100%;border:none;background:none;
+    font-family:inherit;font-size:14px;font-weight:600;color:var(--t1);
+    padding:9px 10px;border-radius:9px;cursor:pointer;text-align:left;
+  }
+  .menu button:hover{background:var(--line-soft);}
+  .dot{width:9px;height:9px;border-radius:99px;flex:0 0 auto;}
+
+  .empty{text-align:center;color:var(--t3);font-size:15px;padding:60px 0;}
+
+  /* Memo / Notice */
+  .memo{background:var(--card);border-radius:20px;padding:24px;box-shadow:var(--shadow);margin-top:20px;}
+  .memo h2{font-size:16px;font-weight:800;letter-spacing:-0.02em;display:flex;align-items:center;gap:8px;margin-bottom:18px;}
+  .memo h2 .pin{width:8px;height:8px;border-radius:99px;background:var(--c-pyegi);}
+  .memo ol{list-style:none;counter-reset:m;display:flex;flex-direction:column;gap:14px;}
+  .memo li{counter-increment:m;display:flex;gap:12px;font-size:14.5px;color:var(--t2);line-height:1.65;}
+  .memo li::before{content:counter(m);flex:0 0 auto;width:22px;height:22px;border-radius:7px;background:var(--line-soft);color:var(--t2);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .memo li b{color:var(--t1);font-weight:700;}
+  .dday{display:inline-flex;align-items:center;font-size:11px;font-weight:800;color:#fff;background:var(--c-pyegi);padding:2px 7px;border-radius:6px;margin-left:6px;vertical-align:middle;letter-spacing:0;}
+
+  /* Toolbar */
+  .toolbar{display:flex;gap:8px;justify-content:flex-end;margin:18px 0 4px;}
+  .tbtn{
+    border:1px solid var(--line);background:#fff;color:var(--t2);font-family:inherit;
+    font-size:13px;font-weight:600;padding:8px 14px;border-radius:10px;cursor:pointer;transition:.15s;
+  }
+  .tbtn:hover{background:var(--line-soft);}
+
+  footer{text-align:center;color:var(--t3);font-size:12px;margin-top:30px;line-height:1.7;}
+
+  .toast{
+    position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);
+    background:var(--t1);color:#fff;font-size:14px;font-weight:600;
+    padding:12px 20px;border-radius:12px;opacity:0;pointer-events:none;transition:.25s;z-index:50;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0);}
+
+  @media(max-width:520px){
+    h1{font-size:24px;}
+    .stat .num{font-size:20px;}
+    .item{flex-wrap:wrap;}
+    .disp{width:100%;margin-top:6px;padding-left:40px;}
+    .menu{right:auto;left:40px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">OFFICE MOVE-OUT</div>
+    <h1>사무실 정리 현황</h1>
+    <div class="sub">가구 · 물품 처리 관리 보드 &nbsp;·&nbsp; <span id="today"></span></div>
+  </header>
+
+  <section class="summary">
+    <div class="stats">
+      <div class="stat"><div class="num" id="s-types">0</div><div class="lbl">품목 종류</div></div>
+      <div class="stat blue"><div class="num" id="s-qty">0</div><div class="lbl">총 수량</div></div>
+      <div class="stat green"><div class="num" id="s-done">0</div><div class="lbl">처리 완료</div></div>
+      <div class="stat red"><div class="num" id="s-todo">0</div><div class="lbl">방법 미정</div></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-top"><span class="label">처리 진행률</span><span class="pct" id="pct">0%</span></div>
+      <div class="bar"><div id="bar-fill"></div></div>
+    </div>
+  </section>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="list" id="list"></div>
+
+  <section class="memo">
+    <h2><span class="pin"></span>비고 · 공지사항</h2>
+    <ol>
+      <li><span><b>천장 등 CCTV 4개 철거 필요.</b> 드릴 등 용품과 철거 방법은 추후 안내 예정.</span></li>
+      <li><span><b>6월 11일까지 사무실을 비워야 함<span class="dday" id="dday"></span></b> · 그 전에 용달(이사) 일정을 잡아야 하며, 일정 조율 논의 필요.</span></li>
+    </ol>
+  </section>
+
+  <div class="toolbar">
+    <button class="tbtn" id="copyBtn">현황 복사</button>
+    <button class="tbtn" id="resetBtn">초기화</button>
+  </div>
+
+  <footer>
+    품목은 공간 관계없이 합산해 표시됩니다. 변경 내용은 이 브라우저에 자동 저장됩니다.<br>
+    처리 방법을 누르면 변경할 수 있고, 왼쪽 체크로 완료 처리됩니다.
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DISP = {
+  '미정':         {c:'--c-mijung',  bg:'--c-mijung-bg'},
+  '양도':         {c:'--c-yangdo',  bg:'--c-yangdo-bg'},
+  '당근':         {c:'--c-danggun', bg:'--c-danggun-bg'},
+  '논의 필요':    {c:'--c-nonui',   bg:'--c-nonui-bg'},
+  '알파룸 이동':  {c:'--c-alpha',   bg:'--c-alpha-bg'},
+  '앞 베란다 이동':{c:'--c-veranda', bg:'--c-veranda-bg'},
+  '교체':         {c:'--c-gyoche',  bg:'--c-gyoche-bg'},
+  '폐기':         {c:'--c-pyegi',   bg:'--c-pyegi-bg'},
+};
+const DISP_ORDER = ['미정','양도','당근','논의 필요','알파룸 이동','앞 베란다 이동','교체','폐기'];
+
+// 공간 관계없이 합산한 전체 물품
+const DEFAULT_ITEMS = [
+  {id:'monitor', name:'모니터', qty:13, cat:'전자기기', origin:'작은방 4 + 거실 9', disp:'알파룸 이동'},
+  {id:'pc', name:'본체', qty:2, cat:'전자기기', origin:'작은방 1 + 내 자리 1', disp:'앞 베란다 이동'},
+  {id:'chair', name:'시디즈 의자', qty:6, cat:'가구', origin:'작은방 3 + 내 자리 3', disp:'앞 베란다 이동'},
+  {id:'drawer', name:'서랍', qty:5, cat:'가구', origin:'작은방 1 + 거실 4', disp:'알파룸 이동'},
+  {id:'desk1', name:'책상 (1800)', qty:1, cat:'가구', origin:'작은방', disp:'양도', note:'다음 세입자에게 양도'},
+  {id:'desk2', name:'래경책상 (1800)', qty:1, cat:'가구', origin:'내 자리', disp:'교체', note:'안방 책상과 교체 · 안방 책상은 알파룸 이동'},
+  {id:'shelf', name:'화이트스틸선반', qty:1, cat:'가구', origin:'내 자리', note:'화이트 · 가로 95', disp:'논의 필요'},
+  {id:'radiator', name:'라디에이터', qty:1, cat:'기타', origin:'내 자리', disp:'앞 베란다 이동'},
+  {id:'toner', name:'프린트기 토너', qty:1, cat:'소모품', origin:'내 자리', disp:'알파룸 이동'},
+  {id:'board', name:'전자칠판', qty:1, cat:'전자기기', origin:'거실', disp:'알파룸 이동', note:'분리 필요 · 거치대는 현관 밖 보관, 스크린은 거실 또는 알파룸 보관'},
+  {id:'vacuum', name:'청소기', qty:1, cat:'가전', origin:'거실', note:'거실에 두고 추후 사무실 오픈 시 사용 예정', disp:'논의 필요'},
+  {id:'vacuum_broken', name:'청소기 (고장)', qty:1, cat:'가전', origin:'폐기 대상', disp:'폐기'},
+  {id:'lamp', name:'스탠드등', qty:1, cat:'가전', origin:'폐기 대상', disp:'폐기'},
+];
+
+const KEY = 'office-inventory-v2';
+let items = load();
+let filter = '전체';
+
+function load(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(KEY));
+    if(saved && Array.isArray(saved.items)){
+      // merge defaults with saved state (keep disp/done), ignore invalid disp values
+      return DEFAULT_ITEMS.map(d=>{
+        const s = saved.items.find(x=>x.id===d.id);
+        if(!s) return {...d, done:false};
+        return {...d, disp: DISP[s.disp] ? s.disp : d.disp, done: !!s.done};
+      });
+    }
+  }catch(e){}
+  return DEFAULT_ITEMS.map(d=>({...d, done:false}));
+}
+function save(){
+  localStorage.setItem(KEY, JSON.stringify({items:items.map(i=>({id:i.id,disp:i.disp,done:i.done}))}));
+}
+function cssv(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+
+function render(){
+  // stats
+  const types = items.length;
+  const qty = items.reduce((a,i)=>a+i.qty,0);
+  const done = items.filter(i=>i.done).length;
+  const todo = items.filter(i=>i.disp==='미정').length;
+  document.getElementById('s-types').textContent = types;
+  document.getElementById('s-qty').textContent = qty;
+  document.getElementById('s-done').textContent = done;
+  document.getElementById('s-todo').textContent = todo;
+  const pct = types ? Math.round(done/types*100) : 0;
+  document.getElementById('pct').textContent = pct+'%';
+  document.getElementById('bar-fill').style.width = pct+'%';
+
+  // tabs
+  const counts = {'전체':items.length};
+  DISP_ORDER.forEach(d=>counts[d]=items.filter(i=>i.disp===d).length);
+  const tabsEl = document.getElementById('tabs');
+  tabsEl.innerHTML='';
+  ['전체',...DISP_ORDER].forEach(t=>{
+    if(t!=='전체' && counts[t]===0) return;
+    const b=document.createElement('button');
+    b.className='tab'+(filter===t?' active':'');
+    b.innerHTML = t+`<span class="cnt">${counts[t]}</span>`;
+    b.onclick=()=>{filter=t;render();};
+    tabsEl.appendChild(b);
+  });
+
+  // list
+  const listEl=document.getElementById('list');
+  listEl.innerHTML='';
+  const shown = items.filter(i=>filter==='전체'||i.disp===filter);
+  if(shown.length===0){
+    listEl.innerHTML='<div class="empty">해당하는 품목이 없어요.</div>';
+    return;
+  }
+  shown.forEach(i=>{
+    const d=DISP[i.disp];
+    const el=document.createElement('div');
+    el.className='item'+(i.done?' done':'');
+    el.innerHTML=`
+      <div class="check" data-act="done"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></div>
+      <div class="body">
+        <div class="name-row">
+          <span class="name">${i.name}</span>
+          <span class="qty">${i.qty}개</span>
+          <span class="cat">${i.cat}</span>
+        </div>
+        <div class="meta">
+          ${i.note?`<b>${i.note}</b> · `:''}${i.origin}
+        </div>
+      </div>
+      <div class="disp">
+        <button class="disp-btn" data-act="disp"
+          style="color:${cssv(d.c)};background:${cssv(d.bg)};">
+          <span class="dot" style="background:${cssv(d.c)};"></span>${i.disp}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="menu">
+          ${DISP_ORDER.map(o=>`<button data-disp="${o}"><span class="dot" style="background:${cssv(DISP[o].c)};"></span>${o}</button>`).join('')}
+        </div>
+      </div>`;
+    // events
+    el.querySelector('[data-act="done"]').onclick=()=>{i.done=!i.done;save();render();};
+    const dispBtn=el.querySelector('[data-act="disp"]');
+    const menu=el.querySelector('.menu');
+    dispBtn.onclick=(e)=>{
+      e.stopPropagation();
+      document.querySelectorAll('.menu.open').forEach(m=>{if(m!==menu)m.classList.remove('open');});
+      menu.classList.toggle('open');
+    };
+    menu.querySelectorAll('[data-disp]').forEach(btn=>{
+      btn.onclick=(e)=>{e.stopPropagation();i.disp=btn.dataset.disp;save();render();};
+    });
+    listEl.appendChild(el);
+  });
+}
+
+document.addEventListener('click',()=>document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open')));
+
+// toolbar
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
+document.getElementById('copyBtn').onclick=()=>{
+  let txt='📋 사무실 정리 현황\n\n';
+  DISP_ORDER.forEach(d=>{
+    const g=items.filter(i=>i.disp===d);
+    if(!g.length)return;
+    txt+=`[${d}]\n`;
+    g.forEach(i=>txt+=`- ${i.name} ${i.qty}개${i.done?' (완료)':''}${i.note?' / '+i.note:''}\n`);
+    txt+='\n';
+  });
+  txt+='[비고 · 공지]\n';
+  txt+='1. 천장 등 CCTV 4개 철거 필요 (드릴 등 용품·철거 방법 추후 안내)\n';
+  txt+='2. 6월 11일까지 사무실 비우기 · 그 전 용달 일정 잡아야 함 (논의 필요)\n';
+  navigator.clipboard.writeText(txt).then(()=>toast('현황을 복사했어요')).catch(()=>toast('복사 실패'));
+};
+document.getElementById('resetBtn').onclick=()=>{
+  if(confirm('처리 방법과 완료 상태를 초기 상태로 되돌릴까요?')){
+    localStorage.removeItem(KEY);items=load();filter='전체';render();toast('초기화했어요');
+  }
+};
+
+document.getElementById('today').textContent = new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
+// D-day (6월 11일 마감)
+(function(){
+  const now = new Date(); now.setHours(0,0,0,0);
+  const deadline = new Date(now.getFullYear(), 5, 11); // 6월 = month index 5
+  const diff = Math.round((deadline - now)/86400000);
+  const el = document.getElementById('dday');
+  if(el){
+    if(diff > 0) el.textContent = 'D-'+diff;
+    else if(diff === 0) el.textContent = 'D-DAY';
+    else el.textContent = '마감';
+  }
+})();
+render();
+</script>
+</body>
+</html>
